@@ -102,7 +102,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dibra Drive</title>
+    <title>UAS Drive</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     
@@ -124,6 +124,8 @@ try {
         .card { border: none; border-radius: 12px; }
         .card-header { border-top-left-radius: 12px !important; border-top-right-radius: 12px !important; background-color: #ffffff; border-bottom: 1px solid #f0f0f0; }
         .file-preview-list { max-height: 150px; overflow-y: auto; }
+        .remove-file-btn { cursor: pointer; transition: color 0.2s; }
+        .remove-file-btn:hover { color: #dc3545 !important; }
     </style>
 </head>
 <body>
@@ -131,7 +133,7 @@ try {
 <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm mb-5">
     <div class="container">
         <a class="navbar-brand" href="#">
-            <i class="bi bi-cloud-arrow-up-fill me-2"></i>Dibra Drive
+            <i class="bi bi-cloud-arrow-up-fill me-2"></i>UAS Drive
         </a>
     </div>
 </nav>
@@ -159,7 +161,7 @@ try {
                         </div>
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg rounded-pill" id="btnUpload">
-                                <i class="bi bi-upload me-2"></i> Upload ke MinIO
+                                <i class="bi bi-upload me-2"></i> Upload
                             </button>
                         </div>
                     </form>
@@ -236,31 +238,65 @@ try {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // Fitur nampilin nama file sebelum diupload
-    document.getElementById('fileToUpload').addEventListener('change', function(e) {
-        let fileListContainer = document.getElementById('filePreviewContainer');
-        let fileList = document.getElementById('fileList');
-        
-        // Kosongin list sebelumnya
+    const fileInput = document.getElementById('fileToUpload');
+    const fileListContainer = document.getElementById('filePreviewContainer');
+    const fileList = document.getElementById('fileList');
+
+    function renderFileList() {
         fileList.innerHTML = '';
+        let files = fileInput.files;
         
-        let files = e.target.files;
         if (files.length > 0) {
-            fileListContainer.classList.remove('d-none'); // Munculin kotaknya
+            fileListContainer.classList.remove('d-none');
             
-            // Looping masukin nama file ke dalem list
             for (let i = 0; i < files.length; i++) {
                 let li = document.createElement('li');
-                li.className = 'list-group-item d-flex align-items-center text-truncate py-2';
-                li.innerHTML = '<i class="bi bi-check2-circle text-success me-2"></i><small>' + files[i].name + '</small>';
+                li.className = 'list-group-item d-flex justify-content-between align-items-center py-2';
+                
+                let fileInfo = document.createElement('div');
+                fileInfo.className = 'text-truncate';
+                fileInfo.innerHTML = '<i class="bi bi-check2-circle text-success me-2"></i><small>' + files[i].name + '</small>';
+                
+                let removeBtn = document.createElement('i');
+                removeBtn.className = 'bi bi-x-circle text-secondary remove-file-btn'; 
+                removeBtn.style.fontSize = '0.85rem'; // Dikecilin ukurannya biar pas sama teks
+                removeBtn.title = 'Batal upload file ini';
+                removeBtn.onclick = function() {
+                    removeFile(i);
+                };
+                
+                li.appendChild(fileInfo);
+                li.appendChild(removeBtn);
                 fileList.appendChild(li);
             }
         } else {
-            fileListContainer.classList.add('d-none'); // Sembunyiin kalau nggak ada file
+            fileListContainer.classList.add('d-none');
+            fileInput.value = ''; 
         }
-    });
+    }
 
-    document.getElementById('uploadForm').addEventListener('submit', function() {
+    fileInput.addEventListener('change', renderFileList);
+
+    function removeFile(indexToRemove) {
+        const dt = new DataTransfer();
+        const files = fileInput.files;
+        
+        for (let i = 0; i < files.length; i++) {
+            if (i !== indexToRemove) {
+                dt.items.add(files[i]);
+            }
+        }
+        
+        fileInput.files = dt.files;
+        renderFileList(); 
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', function(e) {
+        if(fileInput.files.length === 0) {
+            e.preventDefault();
+            alert('Pilih file dulu sebelum klik upload!');
+            return;
+        }
         let btn = document.getElementById('btnUpload');
         btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Mengupload...';
         btn.classList.add('disabled');

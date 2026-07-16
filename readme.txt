@@ -8,3 +8,4 @@ Identitas Kelompok :
              Nim : 2415323058
              Peran : Demo saat presentasi
 
+Untuk Deploy belum dicoba, baru dicoba menggunakan Ip address

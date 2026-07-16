@@ -29,7 +29,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['folderName'])) {
     }
 }
 
-// 2. Proses Multiple Upload File (Sekarang di-handle bareng AJAX)
+// 2. Proses Multiple Upload File 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['filesToUpload'])) {
     $files = $_FILES['filesToUpload'];
     $totalFiles = count($files['name']);
